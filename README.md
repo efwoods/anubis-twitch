@@ -72,3 +72,6 @@ npm start       # bot.js
 
 - Implicit OAuth (`response_type=token`) — no client secret.
 - Do not commit `.env`.
+
+## Test Chat:
+https://www.twitch.tv/afterlife_test
