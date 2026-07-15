@@ -1,0 +1,14 @@
+{
+  "name": "anubis-twitch",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node bot.js",
+    "oauth": "node oauth-server.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "ws": "^8.21.1"
+  }
+}

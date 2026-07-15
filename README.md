@@ -1,3 +1,74 @@
 # anubis-twitch
 
-Twitch Integration for the Neural Nexus API
+Twitch chat bot integration for the Neural Nexus API, based on the
+[Twitch Example Chatbot](https://dev.twitch.tv/docs/chat/chatbot-guide/#example-code).
+
+By default the bot listens for `HeyGuys` and replies with `VoHiYo`.
+
+## Two Compose files
+
+| File | Service | Purpose |
+|---|---|---|
+| `docker-compose.oauth.yml` | oauth | Callback server on `:9070` — shows the access token |
+| `docker-compose.bot.yml` | bot | Twitch chat bot (`bot.js`) |
+
+You start them separately. Put `OAUTH_TOKEN` into `.env` yourself.
+
+## Prerequisites
+
+1. Twitch application at [dev.twitch.tv/console/apps](https://dev.twitch.tv/console/apps)
+2. OAuth Redirect URL: `http://localhost:9070`
+3. `CLIENT_ID`, `BOT_USER_ID`, `CHAT_CHANNEL_USER_ID` in `.env`
+
+## Quick start
+
+```bash
+cp .env.example .env
+# fill CLIENT_ID, BOT_USER_ID, CHAT_CHANNEL_USER_ID
+```
+
+### 1. Start OAuth server
+
+```bash
+docker compose -f docker-compose.oauth.yml up --build
+```
+
+Open the authorize URL from the logs (signed in as the **bot** account),
+approve, then copy `OAUTH_TOKEN=...` from the callback page into `.env`.
+
+### 2. Start the bot
+
+```bash
+docker compose -f docker-compose.bot.yml up --build
+```
+
+Live test: send `HeyGuys` in chat → bot replies `VoHiYo`.
+
+## Stop
+
+```bash
+docker compose -f docker-compose.oauth.yml down
+docker compose -f docker-compose.bot.yml down
+```
+
+## Environment variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `CLIENT_ID` | yes | Twitch application client id |
+| `BOT_USER_ID` | yes | Bot account user id |
+| `CHAT_CHANNEL_USER_ID` | yes | Channel user id |
+| `OAUTH_TOKEN` | yes (for bot) | Paste manually from the oauth callback page |
+
+## Local development
+
+```bash
+npm install
+npm run oauth   # oauth-server.js
+npm start       # bot.js
+```
+
+## Notes
+
+- Implicit OAuth (`response_type=token`) — no client secret.
+- Do not commit `.env`.

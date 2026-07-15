@@ -8,3 +8,11 @@
 
 https://dev.twitch.tv/docs/chat/
 
+A user should be able to use all the commands of the neural nexus from within twitch and communicate with distinct avatars as distinc twitch bots. 
+There should be the ability to have different twitch bots that are each distinct avatars from the same user account.
+
+
+<!-- https://dev.twitch.tv/docs/chat/chatbot-guide/ -->
+
+
+<!-- https://www.twitch.tv/afterlife_test/about -->

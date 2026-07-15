@@ -1,0 +1,12 @@
+services:
+  bot:
+    build: .
+    container_name: anubis-twitch-bot
+    command: ["node", "bot.js"]
+    env_file:
+      - .env
+    environment:
+      ENV_PATH: /app/.env
+    volumes:
+      - ./.env:/app/.env:ro
+    restart: unless-stopped
