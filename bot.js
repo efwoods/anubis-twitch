@@ -1,7 +1,7 @@
 import { config as loadDotenv } from 'dotenv';
 import WebSocket from 'ws';
 
-loadDotenv({ path: process.env.ENV_PATH || '.env' });
+loadDotenv({ path: process.env.ENV_PATH || '.env', quiet: true });
 
 const BOT_USER_ID = process.env.BOT_USER_ID;
 const CHAT_CHANNEL_USER_ID = process.env.CHAT_CHANNEL_USER_ID;
@@ -39,7 +39,25 @@ async function getAuth() {
 		process.exit(1);
 	}
 
-	console.log("Validated token.");
+	const data = await response.json();
+	console.log(`Validated token for ${data.login} (${data.user_id}).`);
+
+	if (String(data.user_id) !== String(BOT_USER_ID)) {
+		console.error(
+			`OAUTH_TOKEN user_id (${data.user_id} / ${data.login}) does not match BOT_USER_ID (${BOT_USER_ID}).`
+		);
+		console.error(
+			'Authorize while signed in as the BOT account, then paste that token into .env.'
+		);
+		process.exit(1);
+	}
+
+	const requiredScopes = ['user:bot', 'user:read:chat', 'user:write:chat'];
+	const missing = requiredScopes.filter((scope) => !(data.scopes || []).includes(scope));
+	if (missing.length) {
+		console.error(`OAUTH_TOKEN is missing required scopes: ${missing.join(', ')}`);
+		process.exit(1);
+	}
 }
 
 function startWebSocketClient() {
@@ -84,7 +102,7 @@ function handleWebSocketMessage(data) {
 	}
 }
 
-async function sendChatMessage(chatMessage) {
+async function sendChatMessage(chatMessage, attempt = 1) {
 	let response = await fetch('https://api.twitch.tv/helix/chat/messages', {
 		method: 'POST',
 		headers: {
@@ -98,6 +116,14 @@ async function sendChatMessage(chatMessage) {
 			message: chatMessage
 		})
 	});
+
+	if (response.status == 429 && attempt <= 2) {
+		// Non-mod accounts are throttled to ~1 chat message per second per
+		// channel. Wait out the window and retry instead of dropping the reply.
+		console.log(`Chat throttled (429), retrying in 1.5s (attempt ${attempt})...`);
+		await new Promise((resolve) => setTimeout(resolve, 1500));
+		return sendChatMessage(chatMessage, attempt + 1);
+	}
 
 	if (response.status != 200) {
 		let data = await response.json();

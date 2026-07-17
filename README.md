@@ -33,8 +33,15 @@ cp .env.example .env
 docker compose -f docker-compose.oauth.yml up --build
 ```
 
-Open the authorize URL from the logs (signed in as the **bot** account),
-approve, then copy `OAUTH_TOKEN=...` from the callback page into `.env`.
+Open the authorize URL from the logs while signed in as the **bot** account
+(not the channel owner), approve, then copy `OAUTH_TOKEN=...` from the
+callback page into `.env`.
+
+The token’s user **must** match `BOT_USER_ID`. If you approve as the channel
+owner by mistake, EventSub returns `403 subscription missing proper authorization`.
+
+Also make the bot a **moderator** in the target channel (required for
+`channel.chat.message` when bot ≠ broadcaster).
 
 ### 2. Start the bot
 
@@ -42,7 +49,8 @@ approve, then copy `OAUTH_TOKEN=...` from the callback page into `.env`.
 docker compose -f docker-compose.bot.yml up --build
 ```
 
-Live test: send `HeyGuys` in chat → bot replies `VoHiYo`.
+Live test: in the channel for `CHAT_CHANNEL_USER_ID`, send exactly `HeyGuys`
+→ bot replies `VoHiYo`. You should see `MSG #...` lines in the bot logs.
 
 ## Stop
 
